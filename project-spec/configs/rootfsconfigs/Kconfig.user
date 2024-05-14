@@ -1,0 +1,22 @@
+menu "user packages " 
+config cppapp  
+	 bool "cppapp"
+	 help
+	
+config gpio-demo  
+	 bool "gpio-demo"
+	 help
+	
+config linux-app  
+	 bool "linux-app"
+	 help
+	
+config myapp  
+	 bool "myapp"
+	 help
+	
+config peekpoke  
+	 bool "peekpoke"
+	 help
+	
+endmenu

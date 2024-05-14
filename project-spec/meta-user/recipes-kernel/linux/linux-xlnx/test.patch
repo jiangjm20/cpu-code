@@ -1,0 +1,94 @@
+diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
+index ac964612d8b0..8afd2d5b9882 100644
+--- a/arch/arm/tools/syscall.tbl
++++ b/arch/arm/tools/syscall.tbl
+@@ -464,3 +464,5 @@
+ 448	common	process_mrelease		sys_process_mrelease
+ 449	common	futex_waitv			sys_futex_waitv
+ 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
++451     common  hello_world                     sys_hello_world
++452     common  call_fpga                       sys_call_fpga
+\ No newline at end of file
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index a34b0f9a9972..cc437a5edad2 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -1259,6 +1259,9 @@ asmlinkage long sys_olduname(struct oldold_utsname __user *);
+ asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim);
+ #endif
+ 
++asmlinkage long sys_hello_world(void);
++asmlinkage long sys_call_fpga(unsigned func_num,void*input,unsigned len1,void*output,unsigned len2);
++
+ /* obsolete: ipc */
+ asmlinkage long sys_ipc(unsigned int call, int first, unsigned long second,
+ 		unsigned long third, void __user *ptr, long fifth);
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index 45fa180cc56a..e761af404a88 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -886,8 +886,14 @@ __SYSCALL(__NR_futex_waitv, sys_futex_waitv)
+ #define __NR_set_mempolicy_home_node 450
+ __SYSCALL(__NR_set_mempolicy_home_node, sys_set_mempolicy_home_node)
+ 
++#define __NR_hello_world 451
++__SYSCALL(__NR_hello_world,sys_hello_world)
++
++#define __NR_call_fpga 452
++__SYSCALL(__NR_call_fpga,sys_call_fpga)
++    
+ #undef __NR_syscalls
+-#define __NR_syscalls 451
++#define __NR_syscalls 453
+ 
+ /*
+  * 32 bit systems traditionally used different
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 5fd54bf0e886..bd7e5e7f25ff 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -2791,3 +2791,24 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
+ 	return 0;
+ }
+ #endif /* CONFIG_COMPAT */
++
++SYSCALL_DEFINE0(hello_world){
++    static int x=0;
++    printk("Hello world! #%d\n",++x);
++    return x;
++}
++
++SYSCALL_DEFINE5(call_fpga,unsigned,func_num,void*,input,unsigned,len1,void*,output,unsigned, len2){
++    //send input to fpga
++    int len;
++    u64 start=ktime_get_ns();
++    while(1){
++        len=*((int*)output);
++        if(len!=-1)
++            break;
++        break;
++        
++    }
++    printk("Time :%llu\n",start);
++    return 0;
++}
+diff --git a/tools/include/uapi/asm-generic/unistd.h b/tools/include/uapi/asm-generic/unistd.h
+index 45fa180cc56a..f7fb1727b757 100644
+--- a/tools/include/uapi/asm-generic/unistd.h
++++ b/tools/include/uapi/asm-generic/unistd.h
+@@ -886,8 +886,14 @@ __SYSCALL(__NR_futex_waitv, sys_futex_waitv)
+ #define __NR_set_mempolicy_home_node 450
+ __SYSCALL(__NR_set_mempolicy_home_node, sys_set_mempolicy_home_node)
+ 
++#define __NR_hello_world 451
++__SYSCALL(__NR_hello_world,sys_hello_world)
++
++#define __NR_call_fpga 452
++ __SYSCALL(__NR_call_fpga,sys_call_fpga)
++    
+ #undef __NR_syscalls
+-#define __NR_syscalls 451
++#define __NR_syscalls 453
+ 
+ /*
+  * 32 bit systems traditionally used different
